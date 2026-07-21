@@ -96,7 +96,7 @@
                 return; 
             }
 
-            const messageText = `나${menuName}이 ${price} 주문 접수되었습니다.`;
+            const messageText = `${menuName} ${price} 주문 접수되었습니다.`;
             
             fetch(NOTIFY_URL, {
                 method: 'POST',
