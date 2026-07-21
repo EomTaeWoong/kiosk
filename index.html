@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>키오스크 자동 주문 전송</title>
+    <!-- 카카오 SDK 로드 -->
+    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js"></script>
+    <style>
+        body { text-align: center; font-family: sans-serif; }
+        #login-btn {
+            margin-top: 50px;
+            padding: 12px 24px;
+            background-color: #fee500;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .kiosk-screen {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+        .kiosk-screen img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .touch-area {
+            position: absolute;
+            background-color: rgba(255, 0, 0, 0.3); /* 영역 확인용 색상 (실제 사용시 opacity: 0 등으로 투명화) */
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 최초 로그인을 위한 버튼 -->
+    <button id="login-btn" onclick="kakaoLogin()">카카오 로그인 및 권한 허용하기</button>
+
+    <!-- 2. 로그인이 완료되면 나타나는 키오스크 화면 -->
+    <div class="kiosk-screen" id="kiosk-container" style="display:none;">
+        <img src="1784606152885(1).jpg" alt="메뉴판">
+
+        <!-- 싸다김밥 영역 -->
+        <button class="touch-area" style="top: 20%; left: 5%; width: 20%; height: 15%;" 
+                onclick="sendMyOrder('싸다김밥', '4,000')"></button>
+
+        <!-- 제육김밥 영역 -->
+        <button class="touch-area" style="top: 20%; left: 27%; width: 20%; height: 15%;" 
+                onclick="sendMyOrder('제육김밥', '5,500')"></button>
+        
+        <!-- 치즈김밥 영역 -->
+        <button class="touch-area" style="top: 20%; left: 50%; width: 20%; height: 15%;" 
+                onclick="sendMyOrder('치즈김밥', '4,500')"></button>
+    </div>
+
+    <script>
+        // 카카오 초기화 (본인의 자바스크립트 키 입력)
+        Kakao.init('여기에_본인의_카카오_JAVASCRIPT_KEY를_입력하세요');
+
+        // 카카오 로그인 및 메시지 전송 권한(Scope) 요청 함수
+        function kakaoLogin() {
+            Kakao.Auth.login({
+                scope: 'talk_message', // [필수] 카카오톡 메시지 전송 권한
+                success: function (authObj) {
+                    alert('로그인 성공! 키오스크 화면으로 넘어갑니다.');
+                    document.getElementById('login-btn').style.display = 'none';
+                    document.getElementById('kiosk-container').style.display = 'block';
+                },
+                fail: function (err) {
+                    console.error(err);
+                    alert('로그인 실패: ' + JSON.stringify(err));
+                },
+            });
+        }
+
+        // '나에게 보내기' API 호출 함수
+        function sendMyOrder(menuName, price) {
+            const messageText = `나${menuName}이 ${price} 주문 접수되었습니다.`;
+
+            Kakao.API.request({
+                url: '/v2/api/talk/memo/default/send',
+                data: {
+                    object_type: 'text',
+                    text: messageText,
+                    link: {
+                        web_url: window.location.href,
+                        mobile_web_url: window.location.href,
+                    },
+                },
+            })
+            .then(function(res) {
+                alert(`[주문 완료] "${menuName}" 카톡이 전송되었습니다!`);
+            })
+            .catch(function(err) {
+                alert('메시지 전송 실패 (로그인 상태를 확인해주세요): ' + JSON.stringify(err));
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
