@@ -3,27 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>키오스크 자동 주문 전송</title>
-    <!-- 카카오 SDK 로드 -->
-    <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.6.0/kakao.min.js"></script>
+    <title>키오스크 주문</title>
     <style>
-        body { text-align: center; font-family: sans-serif; }
-        #login-btn {
-            margin-top: 50px;
-            padding: 12px 24px;
-            background-color: #fee500;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        body { text-align: center; font-family: sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
         .kiosk-screen {
             position: relative;
             display: inline-block;
             width: 100%;
             max-width: 600px;
-            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .kiosk-screen img {
             width: 100%;
@@ -32,7 +20,7 @@
         }
         .touch-area {
             position: absolute;
-            background-color: rgba(255, 0, 0, 0.3); /* 영역 확인용 색상 (실제 사용시 opacity: 0 등으로 투명화) */
+            background-color: rgba(255, 0, 0, 0.3); /* 테스트 완료 후 투명하게 하려면 rgba(0,0,0,0)으로 변경 */
             cursor: pointer;
             border: none;
             border-radius: 10px;
@@ -41,67 +29,56 @@
 </head>
 <body>
 
-    <!-- 1. 최초 로그인을 위한 버튼 -->
-    <button id="login-btn" onclick="kakaoLogin()">카카오 로그인 및 권한 허용하기</button>
-
-    <!-- 2. 로그인이 완료되면 나타나는 키오스크 화면 -->
-    <div class="kiosk-screen" id="kiosk-container" style="display:none;">
+    <div class="kiosk-screen">
         <img src="1784606152885(1).jpg" alt="메뉴판">
 
-        <!-- 싸다김밥 영역 -->
+        <!-- 1열: 싸다김밥 -->
         <button class="touch-area" style="top: 20%; left: 5%; width: 20%; height: 15%;" 
-                onclick="sendMyOrder('싸다김밥', '4,000')"></button>
+                onclick="sendOrder('싸다김밥', '4,000')"></button>
 
-        <!-- 제육김밥 영역 -->
+        <!-- 2열: 제육김밥 -->
         <button class="touch-area" style="top: 20%; left: 27%; width: 20%; height: 15%;" 
-                onclick="sendMyOrder('제육김밥', '5,500')"></button>
+                onclick="sendOrder('제육김밥', '5,500')"></button>
         
-        <!-- 치즈김밥 영역 -->
+        <!-- 3열: 치즈김밥 -->
         <button class="touch-area" style="top: 20%; left: 50%; width: 20%; height: 15%;" 
-                onclick="sendMyOrder('치즈김밥', '4,500')"></button>
+                onclick="sendOrder('치즈김밥', '4,500')"></button>
     </div>
 
     <script>
-        // 카카오 초기화 (본인의 자바스크립트 키 입력)
-        Kakao.init('여기에_본인의_카카오_JAVASCRIPT_KEY를_입력하세요');
+        // 🚨 여기에 Formspree에서 발급받은 주소를 넣으세요
+        const NOTIFY_URL = 'https://formspree.io/f/xdaqdnal';
 
-        // 카카오 로그인 및 메시지 전송 권한(Scope) 요청 함수
-        function kakaoLogin() {
-            Kakao.Auth.login({
-                scope: 'talk_message', // [필수] 카카오톡 메시지 전송 권한
-                success: function (authObj) {
-                    alert('로그인 성공! 키오스크 화면으로 넘어갑니다.');
-                    document.getElementById('login-btn').style.display = 'none';
-                    document.getElementById('kiosk-container').style.display = 'block';
-                },
-                fail: function (err) {
-                    console.error(err);
-                    alert('로그인 실패: ' + JSON.stringify(err));
-                },
-            });
-        }
+        function sendOrder(menuName, price) {
+            // 1. 손님에게 보여줄 확인창 (취소 누르면 전송 안 됨)
+            if (!confirm(`[${menuName}] ${price}원\n주문하시겠습니까?`)) {
+                return; 
+            }
 
-        // '나에게 보내기' API 호출 함수
-        function sendMyOrder(menuName, price) {
+            // 2. 사장님께 보낼 메시지 내용
             const messageText = `나${menuName}이 ${price} 주문 접수되었습니다.`;
-
-            Kakao.API.request({
-                url: '/v2/api/talk/memo/default/send',
-                data: {
-                    object_type: 'text',
-                    text: messageText,
-                    link: {
-                        web_url: window.location.href,
-                        mobile_web_url: window.location.href,
-                    },
+            
+            // 3. 백그라운드 자동 전송 (손님 화면 안 바뀜)
+            fetch(NOTIFY_URL, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({
+                    '주문내용': messageText
+                })
             })
-            .then(function(res) {
-                alert(`[주문 완료] "${menuName}" 카톡이 전송되었습니다!`);
+            .then(response => {
+                if(response.ok) {
+                    alert('주문이 완료되었습니다!');
+                } else {
+                    alert('주문 전송에 실패했습니다.');
+                }
             })
-            .catch(function(err) {
-                alert('메시지 전송 실패 (로그인 상태를 확인해주세요): ' + JSON.stringify(err));
-                console.error(err);
+            .catch(error => {
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
             });
         }
     </script>
