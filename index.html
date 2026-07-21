@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>키오스크 주문</title>
     <style>
-        body { text-align: center; font-family: sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        body { text-align: center; font-family: sans-serif; background-color: #f4f4f4; margin: 0; padding: 10px; }
         .kiosk-screen {
             position: relative;
             display: inline-block;
@@ -18,13 +18,16 @@
             height: auto;
             display: block;
         }
+        /* 터치 영역 (평소에는 완전히 투명하게 처리) */
         .touch-area {
             position: absolute;
-            background-color: rgba(255, 0, 0, 0.3); /* 테스트 완료 후 투명하게 하려면 rgba(0,0,0,0)으로 변경 */
+            background-color: transparent; /* 완전 투명 */
             cursor: pointer;
             border: none;
             border-radius: 10px;
         }
+        /* 영역을 테스트하고 싶을 때만 아래 주석을 풀고 사용하세요 */
+        /* .touch-area { background-color: rgba(255, 0, 0, 0.3); border: 1px dashed red; } */
     </style>
 </head>
 <body>
@@ -32,33 +35,69 @@
     <div class="kiosk-screen">
         <img src="1784606152885(1).jpg" alt="메뉴판">
 
-        <!-- 1열: 싸다김밥 -->
-        <button class="touch-area" style="top: 20%; left: 5%; width: 20%; height: 15%;" 
+        <!-- [1행 메뉴] -->
+        <!-- 싸다김밥 -->
+        <button class="touch-area" style="top: 31%; left: 5%; width: 17%; height: 20%;" 
                 onclick="sendOrder('싸다김밥', '4,000')"></button>
-
-        <!-- 2열: 제육김밥 -->
-        <button class="touch-area" style="top: 20%; left: 27%; width: 20%; height: 15%;" 
+        <!-- 제육김밥 -->
+        <button class="touch-area" style="top: 31%; left: 24.5%; width: 17%; height: 20%;" 
                 onclick="sendOrder('제육김밥', '5,500')"></button>
-        
-        <!-- 3열: 치즈김밥 -->
-        <button class="touch-area" style="top: 20%; left: 50%; width: 20%; height: 15%;" 
+        <!-- 치즈김밥 -->
+        <button class="touch-area" style="top: 31%; left: 44%; width: 17%; height: 20%;" 
                 onclick="sendOrder('치즈김밥', '4,500')"></button>
+        <!-- 샐러드김밥 -->
+        <button class="touch-area" style="top: 31%; left: 63.5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('샐러드김밥', '4,500')"></button>
+        <!-- 참치김밥 -->
+        <button class="touch-area" style="top: 31%; left: 83%; width: 17%; height: 20%;" 
+                onclick="sendOrder('참치김밥', '5,000')"></button>
+
+        <!-- [2행 메뉴] -->
+        <!-- 묵은지참치김밥 -->
+        <button class="touch-area" style="top: 53.5%; left: 5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('묵은지참치김밥', '5,500')"></button>
+        <!-- 통새우김밥 -->
+        <button class="touch-area" style="top: 53.5%; left: 24.5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('통새우김밥', '5,500')"></button>
+        <!-- 돈까스김밥 -->
+        <button class="touch-area" style="top: 53.5%; left: 44%; width: 17%; height: 20%;" 
+                onclick="sendOrder('돈까스김밥', '5,500')"></button>
+        <!-- 킹스팸김밥 -->
+        <button class="touch-area" style="top: 53.5%; left: 63.5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('킹스팸김밥', '5,500')"></button>
+        <!-- 소고기김밥 -->
+        <button class="touch-area" style="top: 53.5%; left: 83%; width: 17%; height: 20%;" 
+                onclick="sendOrder('소고기김밥', '5,500')"></button>
+
+        <!-- [3행 메뉴] -->
+        <!-- 멸치고추김밥 -->
+        <button class="touch-area" style="top: 76%; left: 5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('멸치고추김밥', '5,000')"></button>
+        <!-- 소세지계란김밥 -->
+        <button class="touch-area" style="top: 76%; left: 24.5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('소세지계란김밥', '5,500')"></button>
+        <!-- 통통계란김밥 -->
+        <button class="touch-area" style="top: 76%; left: 44%; width: 17%; height: 20%;" 
+                onclick="sendOrder('통통계란김밥', '6,000')"></button>
+        <!-- 포장용기 -->
+        <button class="touch-area" style="top: 76%; left: 63.5%; width: 17%; height: 20%;" 
+                onclick="sendOrder('포장용기', '500')"></button>
+        <!-- 국물포장용기 -->
+        <button class="touch-area" style="top: 76%; left: 83%; width: 17%; height: 20%;" 
+                onclick="sendOrder('국물포장용기', '200')"></button>
     </div>
 
     <script>
-        // 🚨 여기에 Formspree에서 발급받은 주소를 넣으세요
+        // 🚨 본인의 Formspree 주소를 입력하세요
         const NOTIFY_URL = 'https://formspree.io/f/xdaqdnal';
 
         function sendOrder(menuName, price) {
-            // 1. 손님에게 보여줄 확인창 (취소 누르면 전송 안 됨)
             if (!confirm(`[${menuName}] ${price}원\n주문하시겠습니까?`)) {
                 return; 
             }
 
-            // 2. 사장님께 보낼 메시지 내용
             const messageText = `나${menuName}이 ${price} 주문 접수되었습니다.`;
             
-            // 3. 백그라운드 자동 전송 (손님 화면 안 바뀜)
             fetch(NOTIFY_URL, {
                 method: 'POST',
                 headers: {
