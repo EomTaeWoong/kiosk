@@ -57,7 +57,8 @@
     </div>
 
     <script>
-        const NOTIFY_URL = 'https://formspree.io/f/xdaqdnal';
+        // 💡 1. Formspree 이메일 주소 대신, 내 Cloudflare 서버 주소 + /send-order 를 적어준다!
+        const NOTIFY_URL = 'https://shiny-surf-3362.xodnd9733.workers.dev/send-order';
 
         function sendOrder(menuName, price) {
             if (!confirm(`[${menuName}] ${price}원\n주문하시겠습니까?`)) {
